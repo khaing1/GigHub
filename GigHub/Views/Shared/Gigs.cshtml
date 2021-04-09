@@ -1,0 +1,69 @@
+﻿@model GigHub.ViewModels.GigsViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+<h2 class="voffset3">@Model.Heading</h2>
+
+ <ul class="gigs">
+    @foreach(var gig in Model.UpcomingGigs)
+    {
+     <li>
+         <div class="date">
+             <div class="month">@gig.DateTime.ToString("MMM")</div>
+             <div class="day">@gig.DateTime.ToString("d ")</div>
+         </div>
+         <div class="details">
+             <span class="artist">
+                 <span>@gig.Artist.Name</span>
+                 @if (Model.ShowActions) { 
+                 <button class="btn btn-link btn-sm js-toggle-following"  href="#" data-followeeId="@gig.ArtistId"> Follow </button>
+                 }
+             </span>
+             <span class="genre">@gig.Genre.Name</span>
+             @if (Model.ShowActions)
+             {
+             <button class="btn btn-default btn-sm pull-right js-toggle-attendance" data-gigId="@gig.Id">Going ?</button>
+             }
+         </div>
+     </li>
+    }
+
+</ul>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $(".js-toggle-attendance").click(function (e) {
+                var $button = $(e.target);
+                $.post("api/attendances", { "gigId": $button.attr("data-gigId") })
+                    .done($button
+                        .removeClass("btn-default")
+                        .addClass("btn-info")
+                        .text("Going"))
+                    .fail(function () {
+                        alert("Something's wrong !")
+                    }
+                    )
+            }
+            );
+
+
+        });
+
+        $(document).ready(function () {
+            $(".js-toggle-following").click(function (e) {
+                var $button = $(e.target);
+                $.post("api/followings", { "followeeId": $button.attr("data-followeeId") })
+                    .done(function () {
+                        $button.text("Following")
+                    })
+                    .fail(function () {
+                    alert("You already follows this artist.")
+                })
+            })
+        })
+
+
+    </script>
+    }
+
