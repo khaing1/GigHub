@@ -20,7 +20,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                
+
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -44,5 +44,83 @@
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
+    <script type="text/template" id="notifications-template">
+        <ul>
+            <%
+            _.each(notifications,function(notification){
+            if(notification.type==2){ %>
+            <li>
+                <%= notification.gig.artist.name %> has canceled the gig at <%=notification.gig.venue%> at <%= notification.gig.dateTime%>.
+            </li>
+
+            <%}
+            if(notification.type==1){
+            if(notification.originalDateTime){
+            if(notification.originalVenue){%>
+            <li> <%=notification.gig.artist.name %> has changed the gig to new venue <%=notification.gig.venue %> at new dateTime <%=notification.gig.dateTime %>.</li>
+            <%
+            }
+            else{ %>
+            <li>
+                <%=notification.gig.artist.name %> has updated the datetime of gig from <%= notification.originalDateTime %> to <%= notification.gig.dateTime %>
+
+            </li>
+            <%
+            }
+
+            }
+
+            if(notification.originalVenue & !notification.originalDateTime){ %>
+            <li>
+                <%=notification.gig.artist.name %> has changed the Venue from <%= notification.originalVenue %> to <%= notification.gig.venue%>.
+            </li>
+            <%
+            }
+
+
+
+            }
+            })
+            %>
+        </ul>
+    </script>
+    <script>
+
+
+
+
+        $(document).ready(function () {
+            $.getJSON("/api/notifications", function (notifications) {
+                if (notifications.length == 0)
+                    return; 
+
+                $(".js-notifications-count")
+                    .text(notifications.length)
+                    .removeClass("hide")
+                    .addClass("animated bounceInDown")
+                    .css({ "position": "absolute", "top": "3px", "right": "0", "background": "#a80a0a" });
+
+                $(".notifications").popover({
+                    html: true,
+
+                    title: "notifications",
+                    content: function () {
+                        var compiled = _.template($("#notifications-template").html());
+                        var html = compiled({ notifications: notifications });
+                        return html;
+                    },
+                    placement: "bottom"
+
+                })
+
+                    
+            });
+
+
+        }
+        )
+    </script>
 </body>
+
+
 </html>
